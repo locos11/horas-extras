@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Registro personal de horas extras trabajadas">
+    <meta name="theme-color" content="#0e1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Mis Horas Extra</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="app-title">
+                <span class="material-symbols-rounded filled title-icon-sym">timer</span>
+                Mis Horas Extra
+            </h1>
+            <div class="header-actions">
+                <button id="btn-settings" class="btn-icon-m3" aria-label="Ajustes">
+                    <span class="material-symbols-rounded">settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="app-main">
+
+        <!-- ===== DASHBOARD VIEW ===== -->
+        <section id="view-dashboard" class="view active">
+
+            <!-- Month Navigator -->
+            <div class="month-nav">
+                <button id="btn-prev-month" class="btn-icon-m3" aria-label="Mes anterior">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <div class="month-label">
+                    <span id="current-month-name" class="month-name-text">Febrero 2026</span>
+                    <span id="current-month-badge" class="m3-badge" style="display:none;">Mes actual</span>
+                </div>
+                <button id="btn-next-month" class="btn-icon-m3" aria-label="Mes siguiente">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="m3-card card-hours">
+                    <div class="card-header-row">
+                        <span class="material-symbols-rounded filled card-icon-m3">schedule</span>
+                        <span class="card-value" id="total-hours">0h</span>
+                    </div>
+                    <span class="card-label">Horas extras</span>
+                </div>
+                <div class="m3-card card-money">
+                    <div class="card-header-row">
+                        <span class="material-symbols-rounded filled card-icon-m3">payments</span>
+                        <span class="card-value" id="total-money">0,00 €</span>
+                    </div>
+                    <span class="card-label">Precio Total</span>
+                </div>
+                <div class="m3-card card-days">
+                    <div class="card-header-row">
+                        <span class="material-symbols-rounded filled card-icon-m3">calendar_month</span>
+                        <span class="card-value" id="total-days">0 días</span>
+                    </div>
+                    <span class="card-label">Registrados</span>
+                </div>
+            </div>
+
+            <!-- Records List -->
+            <div class="records-section">
+                <h2 class="section-title">Registros del mes</h2>
+                <div id="records-list" class="records-list">
+                    <!-- Records will be inserted here by JS -->
+                </div>
+                <div id="empty-state" class="empty-state" style="display:none;">
+                    <span class="material-symbols-rounded empty-icon-m3">event_busy</span>
+                    <p class="empty-text">No hay registros este mes</p>
+                    <p class="empty-subtext">Pulsa <strong>+</strong> para añadir tus horas extras</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SETTINGS VIEW ===== -->
+        <section id="view-settings" class="view">
+            <div class="settings-header">
+                <button id="btn-back" class="btn-icon-m3" aria-label="Volver">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2 class="settings-title">Ajustes</h2>
+            </div>
+
+            <div class="settings-form">
+
+                <!-- Storage Selector -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
+                        <span class="material-symbols-rounded filled">database</span>
+                        Almacenamiento
+                    </h3>
+                    <div class="m3-segmented-btn" id="storage-selector">
+                        <button class="m3-seg-item active" data-value="indexeddb">
+                            <span class="material-symbols-rounded">smartphone</span>
+                            <span>IndexedDB</span>
+                        </button>
+                        <button class="m3-seg-item" data-value="file">
+                            <span class="material-symbols-rounded">description</span>
+                            <span>Archivo Local</span>
+                        </button>
+                    </div>
+                    <div id="file-config" class="file-config" style="display:none;">
+                        <div class="file-info-card">
+                            <span class="material-symbols-rounded filled file-info-icon">info</span>
+                            <p class="file-info-text">Los datos se guardan en un archivo JSON. Cada cambio descarga
+                                automáticamente la copia actualizada. Al abrir la app, carga tu archivo.</p>
+                        </div>
+                        <div class="file-actions">
+                            <button id="btn-load-file" class="m3-btn-tonal">
+                                <span class="material-symbols-rounded">folder_open</span>
+                                Cargar archivo
+                            </button>
+                            <button id="btn-save-file" class="m3-btn-tonal">
+                                <span class="material-symbols-rounded">save</span>
+                                Guardar archivo ahora
+                            </button>
+                        </div>
+                        <input type="file" id="file-load-input" accept=".json" style="display:none">
+                        <div id="file-status" class="file-status" style="display:none;">
+                            <span class="material-symbols-rounded filled file-status-icon">check_circle</span>
+                            <span id="file-status-text">Archivo cargado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-divider"></div>
+
+                <!-- Work settings -->
+                <h3 class="settings-section-title">
+                    <span class="material-symbols-rounded filled">work</span>
+                    Trabajo
+                </h3>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon">euro</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="setting-rate">Precio por hora extra</label>
+                        <div class="m3-field-row">
+                            <input type="number" id="setting-rate" class="m3-input" placeholder="12.50" step="0.01"
+                                min="0">
+                            <span class="m3-input-suffix">€/hora</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon">wb_twilight</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="setting-start-time">Hora de inicio por defecto</label>
+                        <input type="time" id="setting-start-time" class="m3-input" value="07:00">
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon">description</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="setting-contract-hours">Horas de contrato diarias</label>
+                        <div class="m3-field-row">
+                            <input type="number" id="setting-contract-hours" class="m3-input" placeholder="8" step="0.5"
+                                min="0" max="24">
+                            <span class="m3-input-suffix">horas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon">restaurant</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="setting-lunch-duration">Pausa para comer</label>
+                        <div class="m3-field-row">
+                            <input type="number" id="setting-lunch-duration" class="m3-input" placeholder="1"
+                                step="0.25" min="0" max="4" value="1">
+                            <span class="m3-input-suffix">horas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-save-settings" class="m3-btn-filled">
+                    <span class="material-symbols-rounded">check</span>
+                    Guardar ajustes
+                </button>
+
+                <div class="settings-divider"></div>
+
+                <div class="danger-zone">
+                    <h3 class="settings-section-title">
+                        <span class="material-symbols-rounded filled">folder</span>
+                        Gestión de datos
+                    </h3>
+                    <button id="btn-export-data" class="m3-btn-tonal">
+                        <span class="material-symbols-rounded">upload</span>
+                        Exportar datos (JSON)
+                    </button>
+                    <button id="btn-import-data" class="m3-btn-tonal">
+                        <span class="material-symbols-rounded">download</span>
+                        Importar datos (JSON)
+                    </button>
+                    <input type="file" id="import-file-input" accept=".json" style="display:none">
+                    <button id="btn-clear-data" class="m3-btn-danger">
+                        <span class="material-symbols-rounded">delete_forever</span>
+                        Borrar todos los datos
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========== ADD/EDIT RECORD MODAL ========== -->
+    <div id="modal-overlay" class="m3-overlay">
+        <div class="m3-bottom-sheet" id="modal-add">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title" id="modal-title">Nuevo registro</h2>
+                <button id="btn-close-modal" class="btn-icon-m3" aria-label="Cerrar">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+
+            <form id="form-add-record" class="sheet-form">
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon"
+                        style="color:var(--md-tertiary)">label</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-title">Título / Motivo</label>
+                        <input type="text" id="input-title" class="m3-input" placeholder="Ej: Hotel Mezquita Center">
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon">calendar_today</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-date">Fecha</label>
+                        <input type="date" id="input-date" class="m3-input" required>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon"
+                        style="color:var(--md-primary)">play_circle</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-start-time">Hora de inicio</label>
+                        <input type="time" id="input-start-time" class="m3-input" required>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon"
+                        style="color:var(--md-error)">stop_circle</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-end-time">Hora de fin</label>
+                        <div class="end-time-row">
+                            <input type="time" id="input-end-time" class="m3-input" required>
+                            <button type="button" id="btn-now" class="m3-btn-tonal btn-now-m3">
+                                <span class="material-symbols-rounded">my_location</span>
+                                Ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="m3-switch-row">
+                    <div class="m3-switch-info">
+                        <span class="material-symbols-rounded filled" style="color:var(--md-tertiary)">restaurant</span>
+                        <span>He parado a comer</span>
+                    </div>
+                    <div class="m3-switch">
+                        <input type="checkbox" id="input-lunch" class="m3-switch-input">
+                        <span class="m3-switch-track">
+                            <span class="m3-switch-thumb"></span>
+                        </span>
+                    </div>
+                </label>
+
+                <!-- Live Preview -->
+                <div class="m3-preview-card" id="calc-preview">
+                    <div class="preview-row">
+                        <span class="preview-label">Horas trabajadas</span>
+                        <span class="preview-value" id="preview-worked">--</span>
+                    </div>
+                    <div class="preview-row">
+                        <span class="preview-label">Contrato</span>
+                        <span class="preview-value" id="preview-contract">− 8h</span>
+                    </div>
+                    <div class="preview-row" id="preview-lunch-row" style="display:none;">
+                        <span class="preview-label">Pausa comida</span>
+                        <span class="preview-value" id="preview-lunch">− 1h</span>
+                    </div>
+                    <div class="preview-divider"></div>
+                    <div class="preview-row preview-total">
+                        <span class="preview-label">Horas extras</span>
+                        <span class="preview-value" id="preview-overtime">--</span>
+                    </div>
+                    <div class="preview-row preview-money-row">
+                        <span class="preview-label">Dinero</span>
+                        <span class="preview-value" id="preview-money">--</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="m3-btn-filled btn-submit-m3" id="btn-submit-record">
+                    <span class="material-symbols-rounded">check_circle</span>
+                    <span id="btn-submit-text">Guardar registro</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== DELETE CONFIRM MODAL ========== -->
+    <div id="modal-delete-overlay" class="m3-overlay">
+        <div class="m3-dialog">
+            <span class="material-symbols-rounded dialog-icon">delete</span>
+            <h2 class="dialog-title">¿Eliminar registro?</h2>
+            <p class="dialog-text">Esta acción no se puede deshacer.</p>
+            <div class="dialog-actions">
+                <button id="btn-cancel-delete" class="m3-btn-text">Cancelar</button>
+                <button id="btn-confirm-delete" class="m3-btn-danger-text">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== FAB ========== -->
+    <button id="fab-add" class="m3-fab" aria-label="Añadir registro">
+        <span class="material-symbols-rounded">add</span>
+    </button>
+
+    <!-- ========== SNACKBAR ========== -->
+    <div id="toast" class="m3-snackbar">
+        <span class="material-symbols-rounded snackbar-icon" id="toast-icon">check_circle</span>
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
