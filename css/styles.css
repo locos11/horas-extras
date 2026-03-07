@@ -1,7 +1,7 @@
 /* ============================================
    REGISTRO HORAS EXTRAS
    Material 3 Expressive Design System
-   Pixel 10 Pro XL – Enhanced
+   Enhanced — Calendar, Detail, Swipe, Annual
    ============================================ */
 
 /* ===== M3 DESIGN TOKENS ===== */
@@ -52,6 +52,7 @@
 
     --md-warning: #f0b856;
     --md-warning-container: #6b4a00;
+    --md-on-warning-container: #ffdea6;
 
     /* Elevation */
     --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -119,15 +120,19 @@ body {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ===== HEADER ===== */
+/* ===== HEADER — GLASSMORPHISM ===== */
 .app-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: var(--header-height);
-    background: var(--md-surface);
+    background: rgba(17, 19, 24, 0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(67, 71, 78, 0.3);
     z-index: 100;
+    transition: background var(--md-motion-standard);
 }
 
 .header-content {
@@ -160,25 +165,6 @@ body {
 .title-icon-sym {
     color: var(--md-primary);
     font-size: 28px;
-}
-
-/* Sync indicator */
-.sync-btn .material-symbols-rounded {
-    font-size: 22px;
-}
-
-.sync-btn.syncing .material-symbols-rounded {
-    animation: m3Spin 1s linear infinite;
-}
-
-@keyframes m3Spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 /* ===== M3 ICON BUTTON ===== */
@@ -227,26 +213,55 @@ body {
     margin: 0 auto;
 }
 
-/* ===== VIEWS ===== */
+/* ===== VIEWS WITH TRANSITIONS ===== */
 .view {
     display: none;
-    animation: m3FadeIn var(--md-motion-emphasized) both;
 }
 
 .view.active {
     display: block;
 }
 
-@keyframes m3FadeIn {
+@keyframes m3ViewEnter {
     from {
         opacity: 0;
         transform: translateY(16px) scale(0.98);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* View transition classes */
+.view-exit-forward {
+    animation: m3ViewExitForward var(--md-motion-emphasized-accel) both;
+}
+.view-enter-forward {
+    animation: m3ViewEnterForward var(--md-motion-emphasized-decel) both;
+}
+.view-exit-back {
+    animation: m3ViewExitBack var(--md-motion-emphasized-accel) both;
+}
+.view-enter-back {
+    animation: m3ViewEnterBack var(--md-motion-emphasized-decel) both;
+}
+
+@keyframes m3ViewExitForward {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-30px); }
+}
+@keyframes m3ViewEnterForward {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes m3ViewExitBack {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(30px); }
+}
+@keyframes m3ViewEnterBack {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 /* ===== MONTH NAVIGATOR ===== */
@@ -287,15 +302,8 @@ body {
 }
 
 @keyframes m3BadgePop {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 /* ===== SUMMARY CARDS ===== */
@@ -303,47 +311,32 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .m3-card {
     background: var(--md-surface-container);
     border-radius: var(--md-shape-lg);
-    padding: 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+    overflow: hidden;
     transition: transform var(--md-motion-spring), box-shadow var(--md-motion-standard), background var(--md-motion-standard);
     animation: m3CardIn var(--md-motion-emphasized) both;
 }
 
-.m3-card:nth-child(1) {
-    animation-delay: 0ms;
-}
-
-.m3-card:nth-child(2) {
-    animation-delay: 60ms;
-}
-
-.m3-card:nth-child(3) {
-    animation-delay: 120ms;
-}
+.m3-card:nth-child(1) { animation-delay: 0ms; }
+.m3-card:nth-child(2) { animation-delay: 60ms; }
+.m3-card:nth-child(3) { animation-delay: 120ms; }
 
 @keyframes m3CardIn {
-    from {
-        opacity: 0;
-        transform: translateY(24px) scale(0.92);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(24px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.m3-card:active {
-    transform: scale(0.96);
-}
+.m3-card:active { transform: scale(0.96); }
 
 .card-header-row {
     display: flex;
@@ -356,43 +349,23 @@ body {
     transition: transform var(--md-motion-spring);
 }
 
-.m3-card:hover .card-icon-m3 {
-    transform: scale(1.15);
-}
+.m3-card:hover .card-icon-m3 { transform: scale(1.15); }
 
-.card-hours .card-icon-m3 {
-    color: var(--md-primary);
-}
-
-.card-money .card-icon-m3 {
-    color: var(--md-success);
-}
-
-.card-days .card-icon-m3 {
-    color: var(--md-warning);
-}
-
+.card-hours .card-icon-m3 { color: var(--md-primary); }
+.card-money .card-icon-m3 { color: var(--md-success); }
 .card-value {
     font-family: var(--md-font-brand);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 500;
     color: var(--md-on-surface);
     line-height: 1.2;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.card-hours .card-value {
-    color: var(--md-primary);
-}
-
-.card-money .card-value {
-    color: var(--md-success);
-}
-
-.card-days .card-value {
-    color: var(--md-warning);
-}
-
+.card-hours .card-value { color: var(--md-primary); }
+.card-money .card-value { color: var(--md-success); }
 .card-label {
     font-size: 12px;
     font-weight: 500;
@@ -400,18 +373,148 @@ body {
     letter-spacing: 0.4px;
 }
 
-.card-days {
-    grid-column: 1 / -1;
+
+/* ===== DEFICIT INDICATOR ===== */
+.deficit-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--md-warning-container);
+    border-radius: var(--md-shape-md);
+    margin-bottom: 16px;
+    animation: m3FadeSlideIn var(--md-motion-emphasized) both;
 }
 
-@media (min-width: 400px) {
-    .summary-cards {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
+.deficit-value {
+    font-family: var(--md-font-brand);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-on-warning-container);
+}
 
-    .card-days {
-        grid-column: auto;
-    }
+.deficit-label {
+    font-size: 13px;
+    color: var(--md-on-warning-container);
+    opacity: 0.85;
+}
+
+@keyframes m3FadeSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== CALENDAR TOGGLE ===== */
+.calendar-toggle-row {
+    margin-bottom: 12px;
+}
+
+.calendar-toggle-btn {
+    width: auto !important;
+}
+
+.calendar-toggle-btn.active {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+/* ===== CALENDAR VIEW ===== */
+.calendar-section {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--md-motion-emphasized), opacity var(--md-motion-standard);
+    opacity: 0;
+    margin-bottom: 0;
+}
+
+.calendar-section.calendar-visible {
+    max-height: 400px;
+    opacity: 1;
+    margin-bottom: 16px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-lg);
+    padding: 12px;
+}
+
+.cal-header-cell {
+    text-align: center;
+    font-family: var(--md-font-plain);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 0;
+}
+
+.cal-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--md-shape-md);
+    cursor: pointer;
+    transition: background var(--md-motion-standard), transform var(--md-motion-spring);
+    position: relative;
+    gap: 2px;
+}
+
+.cal-cell:hover {
+    background: var(--md-surface-container-high);
+}
+
+.cal-cell:active {
+    transform: scale(0.9);
+}
+
+.cal-empty {
+    cursor: default;
+}
+
+.cal-empty:hover {
+    background: transparent;
+}
+
+.cal-day-num {
+    font-family: var(--md-font-brand);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--md-on-surface);
+    line-height: 1;
+}
+
+.cal-today {
+    background: var(--md-primary-container);
+}
+
+.cal-today .cal-day-num {
+    color: var(--md-on-primary-container);
+    font-weight: 500;
+}
+
+.cal-has-record {
+    background: var(--md-surface-container-high);
+}
+
+.cal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.cal-dot-overtime {
+    background: var(--md-primary);
+}
+
+.cal-dot-deficit {
+    background: var(--md-warning);
 }
 
 /* ===== RECORDS SECTION ===== */
@@ -431,6 +534,61 @@ body {
     gap: 4px;
 }
 
+/* ===== SWIPE CONTAINER ===== */
+.record-swipe-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--md-shape-lg);
+    animation: m3SlideIn var(--md-motion-emphasized) both;
+}
+
+.swipe-actions-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 160px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 0 var(--md-shape-lg) var(--md-shape-lg) 0;
+}
+
+.swipe-action-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--md-font-plain);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    will-change: transform, opacity;
+    transform-origin: center center;
+}
+
+.swipe-action-btn:active {
+    filter: brightness(1.2);
+}
+
+.swipe-action-btn .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.swipe-edit-btn {
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+}
+
+.swipe-delete-btn {
+    background: var(--md-error-container);
+    color: var(--md-on-error-container);
+}
+
 /* ===== RECORD ITEM ===== */
 .record-item {
     background: var(--md-surface-container);
@@ -439,26 +597,20 @@ body {
     display: flex;
     align-items: center;
     gap: 14px;
-    transition: background var(--md-motion-standard), transform var(--md-motion-spring);
-    animation: m3SlideIn var(--md-motion-emphasized) both;
+    transition: background var(--md-motion-standard), transform 0.15s ease;
     cursor: pointer;
+    position: relative;
+    z-index: 1;
+    will-change: transform;
 }
 
 .record-item:active {
     background: var(--md-surface-container-high);
-    transform: scale(0.98);
 }
 
 @keyframes m3SlideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
+    from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 .record-date-badge {
@@ -525,6 +677,18 @@ body {
     flex-wrap: wrap;
 }
 
+.record-chevron {
+    flex-shrink: 0;
+    color: var(--md-on-surface-variant);
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+}
+
+.record-chevron .material-symbols-rounded {
+    font-size: 20px;
+}
+
 /* M3 Assist Chips */
 .m3-chip {
     font-family: var(--md-font-plain);
@@ -544,6 +708,11 @@ body {
     color: var(--md-on-primary-container);
 }
 
+.chip-deficit {
+    background: var(--md-warning-container);
+    color: var(--md-on-warning-container);
+}
+
 .chip-lunch {
     background: var(--md-tertiary-container);
     color: var(--md-on-tertiary-container);
@@ -554,52 +723,19 @@ body {
     color: var(--md-on-success-container);
 }
 
-.record-actions {
-    flex-shrink: 0;
-}
-
-.btn-delete {
-    background: transparent;
-    border: none;
-    color: var(--md-on-surface-variant);
-    cursor: pointer;
-    padding: 8px;
-    border-radius: var(--md-shape-full);
-    transition: background var(--md-motion-standard), color var(--md-motion-standard), transform var(--md-motion-spring);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-delete .material-symbols-rounded {
-    font-size: 20px;
-}
-
-.btn-delete:hover {
-    background: rgba(255, 180, 171, 0.08);
-    color: var(--md-error);
-}
-
-.btn-delete:active {
-    background: rgba(255, 180, 171, 0.16);
-    color: var(--md-error);
-    transform: scale(0.85);
-}
-
-/* Empty State */
+/* Empty State — Enhanced SVG */
 .empty-state {
     text-align: center;
-    padding: 56px 24px;
-    animation: m3FadeIn var(--md-motion-emphasized) both;
+    padding: 48px 24px;
+    animation: m3ViewEnter var(--md-motion-emphasized) both;
 }
 
-.empty-icon-m3 {
-    font-size: 64px;
+.empty-illustration {
+    width: 140px;
+    height: 112px;
     color: var(--md-on-surface-variant);
-    opacity: 0.4;
-    margin-bottom: 16px;
-    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' -25, 'opsz' 48;
-    display: block;
+    margin-bottom: 20px;
+    opacity: 0.6;
 }
 
 .empty-text {
@@ -638,15 +774,8 @@ body {
 }
 
 @keyframes m3FabIn {
-    from {
-        transform: scale(0) rotate(-90deg);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1) rotate(0);
-        opacity: 1;
-    }
+    from { transform: scale(0) rotate(-90deg); opacity: 0; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
 }
 
 .m3-fab .material-symbols-rounded {
@@ -663,9 +792,7 @@ body {
     transform: rotate(90deg);
 }
 
-.m3-fab:active {
-    transform: scale(0.92);
-}
+.m3-fab:active { transform: scale(0.92); }
 
 .m3-fab.hidden {
     transform: scale(0) rotate(90deg);
@@ -709,12 +836,18 @@ body {
 }
 
 .sheet-handle {
-    width: 32px;
+    width: 40px;
     height: 4px;
     border-radius: var(--md-shape-full);
     background: var(--md-outline-variant);
-    margin: 12px auto 0;
+    margin: 0 auto;
     opacity: 0.6;
+    padding: 0;
+}
+
+.sheet-handle-area {
+    padding: 14px 0 6px;
+    cursor: grab;
 }
 
 .sheet-header {
@@ -735,6 +868,124 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+/* ===== RECORD DETAIL SHEET ===== */
+.detail-content {
+    padding-bottom: 8px;
+}
+
+.detail-date-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-lg);
+}
+
+.detail-day-num {
+    font-family: var(--md-font-brand);
+    font-size: 42px;
+    font-weight: 500;
+    color: var(--md-primary);
+    line-height: 1;
+    min-width: 56px;
+    text-align: center;
+}
+
+.detail-day-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-weekday {
+    font-family: var(--md-font-brand);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    text-transform: capitalize;
+}
+
+.detail-full-date {
+    font-size: 13px;
+    color: var(--md-on-surface-variant);
+}
+
+.detail-title {
+    font-family: var(--md-font-brand);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    padding: 0 4px 12px;
+}
+
+.detail-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-info-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-md);
+}
+
+.detail-info-item:first-child {
+    border-radius: var(--md-shape-md) var(--md-shape-md) var(--md-shape-xs) var(--md-shape-xs);
+}
+
+.detail-info-item:last-child {
+    border-radius: var(--md-shape-xs) var(--md-shape-xs) var(--md-shape-md) var(--md-shape-md);
+}
+
+.detail-info-item:only-child {
+    border-radius: var(--md-shape-md);
+}
+
+.detail-info-item .material-symbols-rounded {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.detail-info-data {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.detail-info-label {
+    font-size: 12px;
+    color: var(--md-on-surface-variant);
+    letter-spacing: 0.3px;
+}
+
+.detail-info-value {
+    font-family: var(--md-font-brand);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+}
+
+.text-deficit { color: var(--md-warning) !important; }
+.text-overtime { color: var(--md-primary); }
+.text-success { color: var(--md-success) !important; }
+
+.detail-actions {
+    display: flex;
+    gap: 10px;
+    padding: 16px 0 8px;
+}
+
+.detail-actions .m3-btn-tonal,
+.detail-actions .m3-btn-danger {
+    flex: 1;
 }
 
 /* ===== M3 DIALOG ===== */
@@ -766,27 +1017,11 @@ body {
 }
 
 @keyframes m3IconShake {
-
-    0%,
-    100% {
-        transform: rotate(0);
-    }
-
-    20% {
-        transform: rotate(-12deg);
-    }
-
-    40% {
-        transform: rotate(10deg);
-    }
-
-    60% {
-        transform: rotate(-6deg);
-    }
-
-    80% {
-        transform: rotate(3deg);
-    }
+    0%, 100% { transform: rotate(0); }
+    20% { transform: rotate(-12deg); }
+    40% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    80% { transform: rotate(3deg); }
 }
 
 .dialog-title {
@@ -996,9 +1231,7 @@ input[type="time"] {
     margin: 6px 0;
 }
 
-.preview-total {
-    padding-top: 4px;
-}
+.preview-total { padding-top: 4px; }
 
 .preview-total .preview-label,
 .preview-total .preview-value {
@@ -1037,36 +1270,9 @@ input[type="time"] {
     overflow: hidden;
 }
 
-.m3-btn-filled .material-symbols-rounded {
-    font-size: 18px;
-}
-
-.m3-btn-filled:hover {
-    box-shadow: var(--md-elevation-1);
-}
-
-.m3-btn-filled:active {
-    transform: scale(0.97);
-}
-
-/* Ripple on save */
-.m3-btn-filled.btn-success {
-    animation: m3BtnPulse 0.6s ease;
-}
-
-@keyframes m3BtnPulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(160, 200, 255, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 0 0 12px rgba(160, 200, 255, 0);
-    }
-
-    100% {
-        box-shadow: none;
-    }
-}
+.m3-btn-filled .material-symbols-rounded { font-size: 18px; }
+.m3-btn-filled:hover { box-shadow: var(--md-elevation-1); }
+.m3-btn-filled:active { transform: scale(0.97); }
 
 .m3-btn-tonal {
     background: var(--md-secondary-container);
@@ -1087,17 +1293,9 @@ input[type="time"] {
     width: 100%;
 }
 
-.m3-btn-tonal .material-symbols-rounded {
-    font-size: 18px;
-}
-
-.m3-btn-tonal:hover {
-    box-shadow: var(--md-elevation-1);
-}
-
-.m3-btn-tonal:active {
-    transform: scale(0.97);
-}
+.m3-btn-tonal .material-symbols-rounded { font-size: 18px; }
+.m3-btn-tonal:hover { box-shadow: var(--md-elevation-1); }
+.m3-btn-tonal:active { transform: scale(0.97); }
 
 .btn-now-m3 {
     width: auto;
@@ -1160,13 +1358,8 @@ input[type="time"] {
     width: 100%;
 }
 
-.m3-btn-danger .material-symbols-rounded {
-    font-size: 18px;
-}
-
-.m3-btn-danger:active {
-    transform: scale(0.97);
-}
+.m3-btn-danger .material-symbols-rounded { font-size: 18px; }
+.m3-btn-danger:active { transform: scale(0.97); }
 
 /* ===== M3 SEGMENTED BUTTON ===== */
 .m3-segmented-btn {
@@ -1195,13 +1388,8 @@ input[type="time"] {
     border-right: 1px solid var(--md-outline);
 }
 
-.m3-seg-item:last-child {
-    border-right: none;
-}
-
-.m3-seg-item .material-symbols-rounded {
-    font-size: 18px;
-}
+.m3-seg-item:last-child { border-right: none; }
+.m3-seg-item .material-symbols-rounded { font-size: 18px; }
 
 .m3-seg-item.active {
     background: var(--md-secondary-container);
@@ -1215,7 +1403,7 @@ input[type="time"] {
 /* ===== FILE CONFIG ===== */
 .file-config {
     margin-top: 12px;
-    animation: m3FadeIn var(--md-motion-emphasized) both;
+    animation: m3ViewEnter var(--md-motion-emphasized) both;
 }
 
 .file-info-card {
@@ -1246,9 +1434,7 @@ input[type="time"] {
     gap: 8px;
 }
 
-.file-actions .m3-btn-tonal {
-    flex: 1;
-}
+.file-actions .m3-btn-tonal { flex: 1; }
 
 .file-status {
     display: flex;
@@ -1257,12 +1443,10 @@ input[type="time"] {
     padding: 10px 0 0;
     font-size: 13px;
     color: var(--md-success);
-    animation: m3FadeIn var(--md-motion-standard) both;
+    animation: m3ViewEnter var(--md-motion-standard) both;
 }
 
-.file-status-icon {
-    font-size: 18px;
-}
+.file-status-icon { font-size: 18px; }
 
 /* ===== SETTINGS VIEW ===== */
 .settings-header {
@@ -1285,9 +1469,7 @@ input[type="time"] {
     gap: 4px;
 }
 
-.settings-section {
-    padding: 4px 0;
-}
+.settings-section { padding: 4px 0; }
 
 .settings-section-title {
     font-family: var(--md-font-plain);
@@ -1318,7 +1500,166 @@ input[type="time"] {
     gap: 8px;
 }
 
-/* ===== M3 SNACKBAR ===== */
+/* ===== ANNUAL SUMMARY VIEW ===== */
+.annual-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.annual-year-text {
+    font-family: var(--md-font-brand);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    min-width: 80px;
+    text-align: center;
+}
+
+.annual-totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.annual-total-item {
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-lg);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.annual-total-item .material-symbols-rounded {
+    font-size: 24px;
+}
+
+.annual-total-value {
+    font-family: var(--md-font-brand);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    display: block;
+    line-height: 1.2;
+}
+
+.annual-total-label {
+    font-size: 11px;
+    color: var(--md-on-surface-variant);
+    display: block;
+    letter-spacing: 0.3px;
+}
+
+/* Annual Chart */
+.annual-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 180px;
+    padding: 0 4px 0;
+    margin-bottom: 24px;
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-lg);
+    padding: 16px 10px 10px;
+}
+
+.chart-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+}
+
+.chart-bar-value {
+    font-family: var(--md-font-brand);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    white-space: nowrap;
+    min-height: 14px;
+}
+
+.chart-bar-track {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    max-width: 32px;
+}
+
+.chart-bar-fill {
+    width: 100%;
+    background: var(--md-primary-container);
+    border-radius: var(--md-shape-xs) var(--md-shape-xs) 0 0;
+    min-height: 0;
+    transition: height var(--md-motion-emphasized);
+}
+
+.chart-current .chart-bar-fill {
+    background: var(--md-primary);
+}
+
+.chart-bar-label {
+    font-family: var(--md-font-plain);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    letter-spacing: 0.3px;
+}
+
+.chart-current .chart-bar-label {
+    color: var(--md-primary);
+    font-weight: 700;
+}
+
+/* Annual Table */
+.annual-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.annual-table-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--md-surface-container);
+    border-radius: var(--md-shape-sm);
+    align-items: center;
+}
+
+.annual-table-month {
+    font-family: var(--md-font-brand);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+}
+
+.annual-table-data {
+    font-family: var(--md-font-plain);
+    font-size: 13px;
+    color: var(--md-on-surface-variant);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.annual-table-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--md-on-surface-variant);
+    font-size: 14px;
+}
+
+/* ===== M3 SNACKBAR WITH UNDO ===== */
 .m3-snackbar {
     position: fixed;
     bottom: calc(96px + var(--safe-bottom));
@@ -1352,37 +1693,37 @@ input[type="time"] {
 .m3-snackbar.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
+    pointer-events: auto;
 }
 
-.m3-snackbar.snackbar-success .snackbar-icon {
-    color: #4caf50;
-}
-
-.m3-snackbar.snackbar-error .snackbar-icon {
-    color: #ef5350;
-}
-
-.m3-snackbar.snackbar-warning .snackbar-icon {
-    color: #ff9800;
-}
-
-.m3-snackbar.snackbar-info .snackbar-icon {
+.snackbar-undo-btn {
+    background: transparent;
+    border: none;
     color: var(--md-inverse-primary);
+    font-family: var(--md-font-plain);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    padding: 6px 12px;
+    border-radius: var(--md-shape-sm);
+    cursor: pointer;
+    margin-left: auto;
+    white-space: nowrap;
+    transition: background var(--md-motion-standard);
 }
 
-.m3-snackbar.snackbar-sync .snackbar-icon {
-    color: var(--md-inverse-primary);
+.snackbar-undo-btn:hover {
+    background: rgba(59, 99, 150, 0.15);
 }
+
+.m3-snackbar.snackbar-success .snackbar-icon { color: #4caf50; }
+.m3-snackbar.snackbar-error .snackbar-icon { color: #ef5350; }
+.m3-snackbar.snackbar-warning .snackbar-icon { color: #ff9800; }
+.m3-snackbar.snackbar-info .snackbar-icon { color: var(--md-inverse-primary); }
 
 /* ===== SCROLLBAR ===== */
-::-webkit-scrollbar {
-    width: 4px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
     background: var(--md-outline-variant);
     border-radius: var(--md-shape-full);
@@ -1390,10 +1731,7 @@ input[type="time"] {
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }

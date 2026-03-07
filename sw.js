@@ -1,11 +1,14 @@
 // Service Worker - Offline caching
-const CACHE_NAME = 'horas-extra-v5';
+const CACHE_NAME = 'horas-extra-v6';
 const ASSETS = [
-    '/horas-extras/',
-    '/horas-extras/index.html',
-    '/horas-extras/css/styles.css',
-    '/horas-extras/js/app.js',
-    '/horas-extras/manifest.json'
+    './',
+    './index.html',
+    './css/styles.css',
+    './js/storage.js',
+    './js/calculations.js',
+    './js/render.js',
+    './js/app.js',
+    './manifest.json'
 ];
 
 // Install: cache core assets
@@ -28,10 +31,7 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-    // Skip non-GET and cloud sync requests
-    if (event.request.method !== 'GET' || event.request.url.includes('script.google.com')) {
-        return;
-    }
+    if (event.request.method !== 'GET') return;
 
     event.respondWith(
         fetch(event.request)

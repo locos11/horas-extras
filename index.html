@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Registro personal de horas extras trabajadas">
-    <meta name="theme-color" content="#0e1117">
+    <meta name="theme-color" content="#111318">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Mis Horas Extra</title>
@@ -23,7 +23,7 @@
 
 <body>
 
-    <!-- ========== HEADER ========== -->
+    <!-- ========== HEADER (Glassmorphism) ========== -->
     <header class="app-header">
         <div class="header-content">
             <h1 class="app-title">
@@ -31,6 +31,9 @@
                 Mis Horas Extra
             </h1>
             <div class="header-actions">
+                <button id="btn-annual" class="btn-icon-m3" aria-label="Resumen anual">
+                    <span class="material-symbols-rounded">bar_chart</span>
+                </button>
                 <button id="btn-settings" class="btn-icon-m3" aria-label="Ajustes">
                     <span class="material-symbols-rounded">settings</span>
                 </button>
@@ -50,7 +53,7 @@
                     <span class="material-symbols-rounded">chevron_left</span>
                 </button>
                 <div class="month-label">
-                    <span id="current-month-name" class="month-name-text">Febrero 2026</span>
+                    <span id="current-month-name" class="month-name-text">Marzo 2026</span>
                     <span id="current-month-badge" class="m3-badge" style="display:none;">Mes actual</span>
                 </div>
                 <button id="btn-next-month" class="btn-icon-m3" aria-label="Mes siguiente">
@@ -74,12 +77,26 @@
                     </div>
                     <span class="card-label">Precio Total</span>
                 </div>
-                <div class="m3-card card-days">
-                    <div class="card-header-row">
-                        <span class="material-symbols-rounded filled card-icon-m3">calendar_month</span>
-                        <span class="card-value" id="total-days">0 días</span>
-                    </div>
-                    <span class="card-label">Registrados</span>
+            </div>
+
+            <!-- Deficit Indicator -->
+            <div id="deficit-indicator" class="deficit-indicator" style="display:none;">
+                <span class="material-symbols-rounded filled" style="color:var(--md-warning)">trending_down</span>
+                <span class="deficit-value">0h</span>
+                <span class="deficit-label">bajo contrato</span>
+            </div>
+
+            <!-- Calendar Toggle + Section -->
+            <div class="calendar-toggle-row">
+                <button id="btn-toggle-calendar" class="m3-btn-tonal calendar-toggle-btn">
+                    <span class="material-symbols-rounded">calendar_view_month</span>
+                    Calendario
+                </button>
+            </div>
+
+            <div id="calendar-section" class="calendar-section">
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar rendered by JS -->
                 </div>
             </div>
 
@@ -90,10 +107,46 @@
                     <!-- Records will be inserted here by JS -->
                 </div>
                 <div id="empty-state" class="empty-state" style="display:none;">
-                    <span class="material-symbols-rounded empty-icon-m3">event_busy</span>
+                    <!-- SVG Empty State Illustration -->
+                    <svg class="empty-illustration" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="40" y="20" width="120" height="120" rx="16" stroke="currentColor" stroke-width="2" opacity="0.2"/>
+                        <rect x="55" y="15" width="90" height="12" rx="6" fill="currentColor" opacity="0.15"/>
+                        <line x1="60" y1="55" x2="140" y2="55" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+                        <line x1="60" y1="75" x2="140" y2="75" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+                        <line x1="60" y1="95" x2="140" y2="95" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+                        <line x1="60" y1="115" x2="140" y2="115" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+                        <circle cx="75" cy="75" r="4" fill="currentColor" opacity="0.1"/>
+                        <circle cx="100" cy="95" r="4" fill="currentColor" opacity="0.1"/>
+                        <circle cx="125" cy="55" r="4" fill="currentColor" opacity="0.1"/>
+                        <circle cx="130" cy="155" r="25" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                        <line x1="148" y1="173" x2="165" y2="190" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+                        <text x="100" y="85" text-anchor="middle" font-size="28" opacity="0.15">📋</text>
+                    </svg>
                     <p class="empty-text">No hay registros este mes</p>
                     <p class="empty-subtext">Pulsa <strong>+</strong> para añadir tus horas extras</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- ===== ANNUAL SUMMARY VIEW ===== -->
+        <section id="view-annual" class="view">
+            <div class="settings-header">
+                <button id="btn-annual-back" class="btn-icon-m3" aria-label="Volver">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2 class="settings-title">Resumen Anual</h2>
+            </div>
+            <div class="annual-nav">
+                <button id="btn-annual-prev" class="btn-icon-m3" aria-label="Año anterior">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <span id="annual-year-label" class="annual-year-text">2026</span>
+                <button id="btn-annual-next" class="btn-icon-m3" aria-label="Año siguiente">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+            <div id="annual-content">
+                <!-- Rendered by JS -->
             </div>
         </section>
 
@@ -233,7 +286,7 @@
     <!-- ========== ADD/EDIT RECORD MODAL ========== -->
     <div id="modal-overlay" class="m3-overlay">
         <div class="m3-bottom-sheet" id="modal-add">
-            <div class="sheet-handle"></div>
+            <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
             <div class="sheet-header">
                 <h2 class="sheet-title" id="modal-title">Nuevo registro</h2>
                 <button id="btn-close-modal" class="btn-icon-m3" aria-label="Cerrar">
@@ -329,6 +382,32 @@
         </div>
     </div>
 
+    <!-- ========== RECORD DETAIL MODAL ========== -->
+    <div id="modal-detail-overlay" class="m3-overlay">
+        <div class="m3-bottom-sheet" id="modal-detail">
+            <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title">Detalle del registro</h2>
+                <button id="btn-close-detail" class="btn-icon-m3" aria-label="Cerrar">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div id="detail-content" class="detail-content">
+                <!-- Rendered by JS -->
+            </div>
+            <div class="detail-actions">
+                <button id="btn-detail-edit" class="m3-btn-tonal">
+                    <span class="material-symbols-rounded">edit</span>
+                    Editar
+                </button>
+                <button id="btn-detail-delete" class="m3-btn-danger">
+                    <span class="material-symbols-rounded">delete</span>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== DELETE CONFIRM MODAL ========== -->
     <div id="modal-delete-overlay" class="m3-overlay">
         <div class="m3-dialog">
@@ -347,12 +426,17 @@
         <span class="material-symbols-rounded">add</span>
     </button>
 
-    <!-- ========== SNACKBAR ========== -->
+    <!-- ========== SNACKBAR WITH UNDO ========== -->
     <div id="toast" class="m3-snackbar">
         <span class="material-symbols-rounded snackbar-icon" id="toast-icon">check_circle</span>
         <span id="toast-message"></span>
+        <button id="toast-undo" class="snackbar-undo-btn" style="display:none;">Deshacer</button>
     </div>
 
+    <!-- Scripts (order matters: storage → calculations → render → app) -->
+    <script src="js/storage.js"></script>
+    <script src="js/calculations.js"></script>
+    <script src="js/render.js"></script>
     <script src="js/app.js"></script>
 </body>
 
