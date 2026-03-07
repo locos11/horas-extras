@@ -1,5 +1,4 @@
-// Service Worker - Offline caching
-const CACHE_NAME = 'horas-extra-v6';
+const CACHE_NAME = 'horas-extra-v7';
 const ASSETS = [
     './',
     './index.html',
@@ -11,28 +10,26 @@ const ASSETS = [
     './manifest.json'
 ];
 
-// Install: cache core assets
+// Install: cache all assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(ASSETS))
-            .then(() => self.skipWaiting())
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
     );
+    self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: remove old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then(keys =>
             Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-        ).then(() => self.clients.claim())
+        )
     );
+    self.clients.claim();
 });
 
-// Fetch: network first, fallback to cache
+// Fetch: network first, cache fallback
 self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-
     event.respondWith(
         fetch(event.request)
             .then(response => {

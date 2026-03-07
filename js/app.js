@@ -1,36 +1,68 @@
 /* ============================================
    APP MAIN — Initialization & Event Listeners
    Depends on: storage.js, calculations.js, render.js
+   v2: Bottom nav + Trips
    ============================================ */
 
 // ===== STATE =====
 let currentYear, currentMonth;
 let deleteTargetId = null;
 let editTargetId = null;
+let editTripTargetId = null;
 
 // ===== HANDLERS =====
 function handleDelete(id) {
-    // Undo-capable delete: soft delete + snackbar with undo
     const record = _cachedRecords.find(r => r.id === id);
     if (!record) return;
 
     const backup = { ...record };
     deleteRecord(id);
-    renderDashboard();
+    refreshCurrentView();
 
     showToast('delete', 'Registro eliminado', 'error', () => {
-        // Undo: re-add the record
         _cachedRecords.push(backup);
-        _cachedRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+        _cachedRecords.sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
         idbSaveRecords();
         autoSaveFile();
-        renderDashboard();
+        refreshCurrentView();
         showToast('undo', 'Registro restaurado', 'success');
     });
 }
 
+function handleDeleteTrip(id) {
+    const trip = _cachedTrips.find(t => t.id === id);
+    if (!trip) return;
+
+    const backup = { ...trip, companions: [...(trip.companions || [])] };
+    deleteTrip(id);
+    refreshCurrentView();
+
+    showToast('delete', 'Salida eliminada', 'error', () => {
+        _cachedTrips.push(backup);
+        _cachedTrips.sort((a, b) => new Date(a.dateStart + 'T00:00:00') - new Date(b.dateStart + 'T00:00:00'));
+        idbSaveTrips();
+        autoSaveFile();
+        refreshCurrentView();
+        showToast('undo', 'Salida restaurada', 'success');
+    });
+}
+
+function refreshCurrentView() {
+    if (_currentView === 'view-home') renderHome();
+    else if (_currentView === 'view-overtime') renderDashboard();
+    else if (_currentView === 'view-trips') renderTrips();
+}
+
 // ===== EVENT LISTENERS =====
 function initEventListeners() {
+    // Bottom navigation
+    document.querySelectorAll('.bottom-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const viewId = item.dataset.view;
+            switchNavView(viewId);
+        });
+    });
+
     // Settings navigation
     document.getElementById('btn-settings').addEventListener('click', () => {
         renderSettings();
@@ -38,24 +70,17 @@ function initEventListeners() {
     });
 
     document.getElementById('btn-back').addEventListener('click', () => {
-        showView('view-dashboard', 'back');
-        renderDashboard();
+        showView(_activeNavView, 'back');
+        refreshCurrentView();
     });
 
-    // Month navigation
+    // Home month navigation
+    document.getElementById('btn-prev-month-home').addEventListener('click', () => navigateMonth(-1));
+    document.getElementById('btn-next-month-home').addEventListener('click', () => navigateMonth(1));
+
+    // Overtime month navigation
     document.getElementById('btn-prev-month').addEventListener('click', () => navigateMonth(-1));
     document.getElementById('btn-next-month').addEventListener('click', () => navigateMonth(1));
-
-    // Calendar toggle
-    const calToggle = document.getElementById('btn-toggle-calendar');
-    if (calToggle) {
-        calToggle.addEventListener('click', () => {
-            const calSection = document.getElementById('calendar-section');
-            const isVisible = calSection.classList.toggle('calendar-visible');
-            calToggle.classList.toggle('active', isVisible);
-            if (isVisible) renderCalendar();
-        });
-    }
 
     // Annual summary
     const btnAnnual = document.getElementById('btn-annual');
@@ -68,31 +93,37 @@ function initEventListeners() {
     const btnAnnualBack = document.getElementById('btn-annual-back');
     if (btnAnnualBack) {
         btnAnnualBack.addEventListener('click', () => {
-            showView('view-dashboard', 'back');
+            showView(_activeNavView, 'back');
         });
     }
     const btnAnnualPrev = document.getElementById('btn-annual-prev');
     if (btnAnnualPrev) {
-        btnAnnualPrev.addEventListener('click', () => {
-            currentYear--;
-            renderAnnualSummary();
-        });
+        btnAnnualPrev.addEventListener('click', () => { currentYear--; renderAnnualSummary(); });
     }
     const btnAnnualNext = document.getElementById('btn-annual-next');
     if (btnAnnualNext) {
-        btnAnnualNext.addEventListener('click', () => {
-            currentYear++;
-            renderAnnualSummary();
-        });
+        btnAnnualNext.addEventListener('click', () => { currentYear++; renderAnnualSummary(); });
     }
 
-    // FAB
-    document.getElementById('fab-add').addEventListener('click', openAddModal);
+    // FAB — contextual action
+    document.getElementById('fab-add').addEventListener('click', () => {
+        if (_currentView === 'view-trips') {
+            openAddTripModal();
+        } else {
+            openAddModal();
+        }
+    });
 
-    // Modal close
+    // Record modal close
     document.getElementById('btn-close-modal').addEventListener('click', () => closeModal('modal-overlay'));
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
         if (e.target === e.currentTarget) closeModal('modal-overlay');
+    });
+
+    // Trip modal close
+    document.getElementById('btn-close-trip-modal').addEventListener('click', () => closeModal('modal-trip-overlay'));
+    document.getElementById('modal-trip-overlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal('modal-trip-overlay');
     });
 
     // Detail modal close
@@ -101,6 +132,15 @@ function initEventListeners() {
         document.getElementById('btn-close-detail').addEventListener('click', () => closeModal('modal-detail-overlay'));
         detailOverlay.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeModal('modal-detail-overlay');
+        });
+    }
+
+    // Trip detail modal close
+    const tripDetailOverlay = document.getElementById('modal-trip-detail-overlay');
+    if (tripDetailOverlay) {
+        document.getElementById('btn-close-trip-detail').addEventListener('click', () => closeModal('modal-trip-detail-overlay'));
+        tripDetailOverlay.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal('modal-trip-detail-overlay');
         });
     }
 
@@ -118,11 +158,10 @@ function initEventListeners() {
     document.getElementById('input-end-time').addEventListener('input', updateCalcPreview);
     document.getElementById('input-lunch').addEventListener('change', updateCalcPreview);
 
-    // Form submit (add or edit)
+    // Record form submit
     document.getElementById('form-add-record').addEventListener('submit', (e) => {
         e.preventDefault();
         const settings = getSettings();
-
         const title = document.getElementById('input-title').value.trim();
         const date = document.getElementById('input-date').value;
         const startTime = document.getElementById('input-start-time').value;
@@ -135,7 +174,6 @@ function initEventListeners() {
         }
 
         const result = calculateOvertime(startTime, endTime, settings.contractHours, lunchBreak, settings.lunchDuration);
-
         const recordData = {
             title, date, startTime, endTime, lunchBreak,
             totalHours: result.totalHours,
@@ -156,7 +194,55 @@ function initEventListeners() {
         const d = new Date(date + 'T00:00:00');
         currentYear = d.getFullYear();
         currentMonth = d.getMonth();
-        renderDashboard();
+        refreshCurrentView();
+    });
+
+    // Trip form submit
+    document.getElementById('form-add-trip').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const hotelName = document.getElementById('input-trip-hotel').value.trim();
+        const dateStart = document.getElementById('input-trip-start').value;
+        const dateEnd = document.getElementById('input-trip-end').value;
+        const description = document.getElementById('input-trip-description').value.trim();
+
+        if (!hotelName || !dateStart || !dateEnd) {
+            showToast('warning', 'Rellena los campos obligatorios', 'warning');
+            return;
+        }
+
+        if (dateEnd < dateStart) {
+            showToast('warning', 'La fecha de fin no puede ser anterior', 'warning');
+            return;
+        }
+
+        // Gather selected companions
+        const selectedChips = document.querySelectorAll('#trip-companion-chips .trip-comp-chip.selected');
+        const companions = Array.from(selectedChips).map(chip => chip.dataset.name);
+
+        const tripData = { hotelName, dateStart, dateEnd, description, companions };
+
+        if (editTripTargetId) {
+            updateTrip(editTripTargetId, tripData);
+            closeModal('modal-trip-overlay');
+            showToast('edit', 'Salida actualizada', 'success');
+        } else {
+            addTrip(tripData);
+            closeModal('modal-trip-overlay');
+            showToast('flight_takeoff', 'Salida programada', 'success');
+        }
+
+        editTripTargetId = null;
+        refreshCurrentView();
+    });
+
+    // Trips tab filter
+    document.querySelectorAll('.trips-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.trips-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            _tripsFilter = tab.dataset.filter;
+            renderTrips();
+        });
     });
 
     // Save settings
@@ -180,7 +266,29 @@ function initEventListeners() {
         });
 
         showToast('check_circle', 'Ajustes guardados', 'success');
-        renderDashboard();
+        refreshCurrentView();
+    });
+
+    // Add companion
+    document.getElementById('btn-add-companion').addEventListener('click', () => {
+        const input = document.getElementById('input-new-companion');
+        const name = input.value.trim();
+        if (!name) { showToast('warning', 'Escribe un nombre', 'warning'); return; }
+        if (_cachedSettings.companions.includes(name)) { showToast('warning', 'Ya existe ese compañero', 'warning'); return; }
+
+        _cachedSettings.companions.push(name);
+        idbSaveSettings();
+        input.value = '';
+        renderCompanionsSettings();
+        showToast('person_add', 'Compañero añadido', 'success');
+    });
+
+    // Allow Enter key to add companion
+    document.getElementById('input-new-companion').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btn-add-companion').click();
+        }
     });
 
     // Storage selector
@@ -188,53 +296,42 @@ function initEventListeners() {
         btn.addEventListener('click', () => {
             document.querySelectorAll('#storage-selector .m3-seg-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             const mode = btn.dataset.value;
             _cachedSettings.storageMode = mode;
             idbSaveSettings();
-
             document.getElementById('file-config').style.display = mode === 'file' ? 'block' : 'none';
-
-            if (mode === 'file') {
-                showToast('description', 'Modo archivo: carga tu JSON o guarda uno nuevo', 'info');
-            } else {
-                showToast('smartphone', 'Datos guardados en IndexedDB', 'info');
-            }
+            showToast(mode === 'file' ? 'description' : 'smartphone',
+                mode === 'file' ? 'Modo archivo activado' : 'Modo IndexedDB activado', 'info');
         });
     });
 
-    // File mode: load file
+    // File mode: load/save
     document.getElementById('btn-load-file').addEventListener('click', () => {
         document.getElementById('file-load-input').click();
     });
-
     document.getElementById('file-load-input').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         try {
             await loadDataFile(file);
             renderSettings();
-            renderDashboard();
-            showToast('folder_open', 'Archivo cargado: ' + file.name, 'success');
+            refreshCurrentView();
+            showToast('folder_open', 'Archivo cargado', 'success');
         } catch (err) {
             showToast('error', 'Error al leer el archivo', 'error');
-            console.error(err);
         }
         e.target.value = '';
     });
-
-    // File mode: save file now
     document.getElementById('btn-save-file').addEventListener('click', () => {
         downloadDataFile();
         showToast('save', 'Archivo guardado', 'success');
     });
 
-    // Delete modal (legacy — now mostly handled by undo snackbar)
+    // Delete modal (legacy)
     document.getElementById('btn-cancel-delete').addEventListener('click', () => {
         deleteTargetId = null;
         closeModal('modal-delete-overlay');
     });
-
     document.getElementById('btn-confirm-delete').addEventListener('click', () => {
         if (deleteTargetId) {
             handleDelete(deleteTargetId);
@@ -242,19 +339,13 @@ function initEventListeners() {
             closeModal('modal-delete-overlay');
         }
     });
-
     document.getElementById('modal-delete-overlay').addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
-            deleteTargetId = null;
-            closeModal('modal-delete-overlay');
-        }
+        if (e.target === e.currentTarget) { deleteTargetId = null; closeModal('modal-delete-overlay'); }
     });
 
-    // Undo button in snackbar
+    // Undo button
     const undoBtn = document.getElementById('toast-undo');
-    if (undoBtn) {
-        undoBtn.addEventListener('click', handleUndoClick);
-    }
+    if (undoBtn) undoBtn.addEventListener('click', handleUndoClick);
 
     // Export data
     document.getElementById('btn-export-data').addEventListener('click', () => {
@@ -263,9 +354,11 @@ function initEventListeners() {
                 hourlyRate: _cachedSettings.hourlyRate,
                 defaultStartTime: _cachedSettings.defaultStartTime,
                 contractHours: _cachedSettings.contractHours,
-                lunchDuration: _cachedSettings.lunchDuration
+                lunchDuration: _cachedSettings.lunchDuration,
+                companions: _cachedSettings.companions || []
             },
             records: _cachedRecords,
+            trips: _cachedTrips,
             exportDate: new Date().toISOString()
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -282,33 +375,34 @@ function initEventListeners() {
     document.getElementById('btn-import-data').addEventListener('click', () => {
         document.getElementById('import-file-input').click();
     });
-
     document.getElementById('import-file-input').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         try {
             await loadDataFile(file);
             renderSettings();
-            renderDashboard();
-            showToast('download', 'Datos importados correctamente', 'success');
+            refreshCurrentView();
+            showToast('download', 'Datos importados', 'success');
         } catch (err) {
-            showToast('error', 'Error al importar el archivo', 'error');
+            showToast('error', 'Error al importar', 'error');
         }
         e.target.value = '';
     });
 
     // Clear all data
     document.getElementById('btn-clear-data').addEventListener('click', async () => {
-        if (confirm('⚠️ ¿Estás seguro de que quieres BORRAR TODOS los datos?\n\nEsta acción no se puede deshacer.')) {
+        if (confirm('⚠️ ¿Borrar TODOS los datos?\n\nEsta acción no se puede deshacer.')) {
             _cachedRecords = [];
+            _cachedTrips = [];
             _cachedSettings = { ...DEFAULT_SETTINGS };
             await idbSaveRecords();
+            await idbSaveTrips();
             await idbSaveSettings();
             localStorage.removeItem('overtime_records');
             localStorage.removeItem('overtime_settings');
             renderSettings();
-            renderDashboard();
-            showToast('delete_forever', 'Todos los datos borrados', 'error');
+            refreshCurrentView();
+            showToast('delete_forever', 'Datos borrados', 'error');
         }
     });
 }
@@ -321,10 +415,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await idbLoadAll();
     initEventListeners();
-    renderDashboard();
+    renderHome();
 });
 
-// ===== SERVICE WORKER REGISTRATION =====
+// ===== SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Registro personal de horas extras trabajadas">
+    <meta name="description" content="Registro personal de horas extras y salidas programadas">
     <meta name="theme-color" content="#111318">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,7 +23,7 @@
 
 <body>
 
-    <!-- ========== HEADER (Glassmorphism) ========== -->
+    <!-- ========== HEADER ========== -->
     <header class="app-header">
         <div class="header-content">
             <h1 class="app-title">
@@ -44,8 +44,83 @@
     <!-- ========== MAIN CONTENT ========== -->
     <main class="app-main">
 
-        <!-- ===== DASHBOARD VIEW ===== -->
-        <section id="view-dashboard" class="view active">
+        <!-- ===== HOME VIEW ===== -->
+        <section id="view-home" class="view active">
+
+            <!-- Month Navigator -->
+            <div class="month-nav">
+                <button id="btn-prev-month-home" class="btn-icon-m3" aria-label="Mes anterior">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <div class="month-label">
+                    <span id="home-month-name" class="month-name-text">Marzo 2026</span>
+                    <span id="home-month-badge" class="m3-badge" style="display:none;">Mes actual</span>
+                </div>
+                <button id="btn-next-month-home" class="btn-icon-m3" aria-label="Mes siguiente">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="home-calendar-wrapper">
+                <div id="home-calendar-grid" class="calendar-grid">
+                    <!-- Calendar rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Quick Summary Cards -->
+            <div class="home-summary-section">
+                <div class="home-summary-row">
+                    <div class="home-summary-card card-hours-home">
+                        <span class="material-symbols-rounded filled home-card-icon">schedule</span>
+                        <div class="home-card-data">
+                            <span class="home-card-value" id="home-total-hours">0h</span>
+                            <span class="home-card-label">Horas extra</span>
+                        </div>
+                    </div>
+                    <div class="home-summary-card card-money-home">
+                        <span class="material-symbols-rounded filled home-card-icon">payments</span>
+                        <div class="home-card-data">
+                            <span class="home-card-value" id="home-total-money">0,00 €</span>
+                            <span class="home-card-label">Este mes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Trips -->
+            <div class="home-upcoming-section">
+                <h2 class="section-title-m3">
+                    <span class="material-symbols-rounded filled section-icon">luggage</span>
+                    Próximas salidas
+                </h2>
+                <div id="home-upcoming-trips" class="home-upcoming-list">
+                    <!-- Rendered by JS -->
+                </div>
+                <div id="home-no-trips" class="home-empty-mini" style="display:none;">
+                    <span class="material-symbols-rounded">flight_takeoff</span>
+                    <span>Sin salidas programadas</span>
+                </div>
+            </div>
+
+            <!-- Recent Records -->
+            <div class="home-recent-section">
+                <h2 class="section-title-m3">
+                    <span class="material-symbols-rounded filled section-icon">history</span>
+                    Últimos registros
+                </h2>
+                <div id="home-recent-records" class="home-recent-list">
+                    <!-- Rendered by JS -->
+                </div>
+                <div id="home-no-records" class="home-empty-mini" style="display:none;">
+                    <span class="material-symbols-rounded">event_busy</span>
+                    <span>Sin registros este mes</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== OVERTIME VIEW (existing dashboard) ===== -->
+        <section id="view-overtime" class="view">
 
             <!-- Month Navigator -->
             <div class="month-nav">
@@ -86,20 +161,6 @@
                 <span class="deficit-label">bajo contrato</span>
             </div>
 
-            <!-- Calendar Toggle + Section -->
-            <div class="calendar-toggle-row">
-                <button id="btn-toggle-calendar" class="m3-btn-tonal calendar-toggle-btn">
-                    <span class="material-symbols-rounded">calendar_view_month</span>
-                    Calendario
-                </button>
-            </div>
-
-            <div id="calendar-section" class="calendar-section">
-                <div id="calendar-grid" class="calendar-grid">
-                    <!-- Calendar rendered by JS -->
-                </div>
-            </div>
-
             <!-- Records List -->
             <div class="records-section">
                 <h2 class="section-title">Registros del mes</h2>
@@ -107,7 +168,6 @@
                     <!-- Records will be inserted here by JS -->
                 </div>
                 <div id="empty-state" class="empty-state" style="display:none;">
-                    <!-- SVG Empty State Illustration -->
                     <svg class="empty-illustration" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="40" y="20" width="120" height="120" rx="16" stroke="currentColor" stroke-width="2" opacity="0.2"/>
                         <rect x="55" y="15" width="90" height="12" rx="6" fill="currentColor" opacity="0.15"/>
@@ -118,13 +178,48 @@
                         <circle cx="75" cy="75" r="4" fill="currentColor" opacity="0.1"/>
                         <circle cx="100" cy="95" r="4" fill="currentColor" opacity="0.1"/>
                         <circle cx="125" cy="55" r="4" fill="currentColor" opacity="0.1"/>
-                        <circle cx="130" cy="155" r="25" stroke="currentColor" stroke-width="2" opacity="0.3"/>
-                        <line x1="148" y1="173" x2="165" y2="190" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
                         <text x="100" y="85" text-anchor="middle" font-size="28" opacity="0.15">📋</text>
                     </svg>
                     <p class="empty-text">No hay registros este mes</p>
                     <p class="empty-subtext">Pulsa <strong>+</strong> para añadir tus horas extras</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- ===== TRIPS VIEW ===== -->
+        <section id="view-trips" class="view">
+
+            <!-- Trips Tab Bar -->
+            <div class="trips-tab-bar">
+                <button class="trips-tab active" data-filter="upcoming">
+                    <span class="material-symbols-rounded">flight_takeoff</span>
+                    Próximas
+                </button>
+                <button class="trips-tab" data-filter="past">
+                    <span class="material-symbols-rounded">history</span>
+                    Pasadas
+                </button>
+                <button class="trips-tab" data-filter="all">
+                    <span class="material-symbols-rounded">list</span>
+                    Todas
+                </button>
+            </div>
+
+            <!-- Trips List -->
+            <div id="trips-list" class="trips-list">
+                <!-- Rendered by JS -->
+            </div>
+            <div id="trips-empty" class="empty-state" style="display:none;">
+                <svg class="empty-illustration" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="30" y="35" width="140" height="90" rx="16" stroke="currentColor" stroke-width="2" opacity="0.2"/>
+                    <circle cx="100" cy="80" r="24" stroke="currentColor" stroke-width="2" opacity="0.15"/>
+                    <path d="M88 80 l8 8 l16-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.15"/>
+                    <rect x="50" y="25" width="30" height="15" rx="4" fill="currentColor" opacity="0.1"/>
+                    <rect x="120" y="25" width="30" height="15" rx="4" fill="currentColor" opacity="0.1"/>
+                    <text x="100" y="145" text-anchor="middle" font-size="14" fill="currentColor" opacity="0.3">✈️</text>
+                </svg>
+                <p class="empty-text">No hay salidas programadas</p>
+                <p class="empty-subtext">Pulsa <strong>+</strong> para planificar una salida</p>
             </div>
         </section>
 
@@ -162,11 +257,11 @@
             <div class="settings-form">
 
                 <!-- Storage Selector -->
-                <div class="settings-section">
-                    <h3 class="settings-section-title">
-                        <span class="material-symbols-rounded filled">database</span>
-                        Almacenamiento
-                    </h3>
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <span class="material-symbols-rounded filled settings-card-icon" style="color:var(--md-primary)">database</span>
+                        <h3 class="settings-card-title">Almacenamiento</h3>
+                    </div>
                     <div class="m3-segmented-btn" id="storage-selector">
                         <button class="m3-seg-item active" data-value="indexeddb">
                             <span class="material-symbols-rounded">smartphone</span>
@@ -181,16 +276,16 @@
                         <div class="file-info-card">
                             <span class="material-symbols-rounded filled file-info-icon">info</span>
                             <p class="file-info-text">Los datos se guardan en un archivo JSON. Cada cambio descarga
-                                automáticamente la copia actualizada. Al abrir la app, carga tu archivo.</p>
+                                automáticamente la copia actualizada.</p>
                         </div>
                         <div class="file-actions">
                             <button id="btn-load-file" class="m3-btn-tonal">
                                 <span class="material-symbols-rounded">folder_open</span>
-                                Cargar archivo
+                                Cargar
                             </button>
                             <button id="btn-save-file" class="m3-btn-tonal">
                                 <span class="material-symbols-rounded">save</span>
-                                Guardar archivo ahora
+                                Guardar
                             </button>
                         </div>
                         <input type="file" id="file-load-input" accept=".json" style="display:none">
@@ -201,78 +296,97 @@
                     </div>
                 </div>
 
-                <div class="settings-divider"></div>
-
                 <!-- Work settings -->
-                <h3 class="settings-section-title">
-                    <span class="material-symbols-rounded filled">work</span>
-                    Trabajo
-                </h3>
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <span class="material-symbols-rounded filled settings-card-icon" style="color:var(--md-tertiary)">work</span>
+                        <h3 class="settings-card-title">Trabajo</h3>
+                    </div>
 
-                <div class="m3-input-group">
-                    <span class="material-symbols-rounded filled input-leading-icon">euro</span>
-                    <div class="m3-field">
-                        <label class="m3-field-label" for="setting-rate">Precio por hora extra</label>
-                        <div class="m3-field-row">
-                            <input type="number" id="setting-rate" class="m3-input" placeholder="12.50" step="0.01"
-                                min="0">
-                            <span class="m3-input-suffix">€/hora</span>
+                    <div class="m3-input-group">
+                        <span class="material-symbols-rounded filled input-leading-icon">euro</span>
+                        <div class="m3-field">
+                            <label class="m3-field-label" for="setting-rate">Precio por hora extra</label>
+                            <div class="m3-field-row">
+                                <input type="number" id="setting-rate" class="m3-input" placeholder="12.50" step="0.01"
+                                    min="0">
+                                <span class="m3-input-suffix">€/hora</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="m3-input-group">
-                    <span class="material-symbols-rounded filled input-leading-icon">wb_twilight</span>
-                    <div class="m3-field">
-                        <label class="m3-field-label" for="setting-start-time">Hora de inicio por defecto</label>
-                        <input type="time" id="setting-start-time" class="m3-input" value="07:00">
-                    </div>
-                </div>
-
-                <div class="m3-input-group">
-                    <span class="material-symbols-rounded filled input-leading-icon">description</span>
-                    <div class="m3-field">
-                        <label class="m3-field-label" for="setting-contract-hours">Horas de contrato diarias</label>
-                        <div class="m3-field-row">
-                            <input type="number" id="setting-contract-hours" class="m3-input" placeholder="8" step="0.5"
-                                min="0" max="24">
-                            <span class="m3-input-suffix">horas</span>
+                    <div class="m3-input-group">
+                        <span class="material-symbols-rounded filled input-leading-icon">wb_twilight</span>
+                        <div class="m3-field">
+                            <label class="m3-field-label" for="setting-start-time">Hora de inicio por defecto</label>
+                            <input type="time" id="setting-start-time" class="m3-input" value="07:00">
                         </div>
                     </div>
-                </div>
 
-                <div class="m3-input-group">
-                    <span class="material-symbols-rounded filled input-leading-icon">restaurant</span>
-                    <div class="m3-field">
-                        <label class="m3-field-label" for="setting-lunch-duration">Pausa para comer</label>
-                        <div class="m3-field-row">
-                            <input type="number" id="setting-lunch-duration" class="m3-input" placeholder="1"
-                                step="0.25" min="0" max="4" value="1">
-                            <span class="m3-input-suffix">horas</span>
+                    <div class="m3-input-group">
+                        <span class="material-symbols-rounded filled input-leading-icon">description</span>
+                        <div class="m3-field">
+                            <label class="m3-field-label" for="setting-contract-hours">Horas de contrato diarias</label>
+                            <div class="m3-field-row">
+                                <input type="number" id="setting-contract-hours" class="m3-input" placeholder="8" step="0.5"
+                                    min="0" max="24">
+                                <span class="m3-input-suffix">horas</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <button id="btn-save-settings" class="m3-btn-filled">
-                    <span class="material-symbols-rounded">check</span>
-                    Guardar ajustes
-                </button>
+                    <div class="m3-input-group">
+                        <span class="material-symbols-rounded filled input-leading-icon">restaurant</span>
+                        <div class="m3-field">
+                            <label class="m3-field-label" for="setting-lunch-duration">Pausa para comer</label>
+                            <div class="m3-field-row">
+                                <input type="number" id="setting-lunch-duration" class="m3-input" placeholder="1"
+                                    step="0.25" min="0" max="4" value="1">
+                                <span class="m3-input-suffix">horas</span>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="settings-divider"></div>
-
-                <div class="danger-zone">
-                    <h3 class="settings-section-title">
-                        <span class="material-symbols-rounded filled">folder</span>
-                        Gestión de datos
-                    </h3>
-                    <button id="btn-export-data" class="m3-btn-tonal">
-                        <span class="material-symbols-rounded">upload</span>
-                        Exportar datos (JSON)
+                    <button id="btn-save-settings" class="m3-btn-filled">
+                        <span class="material-symbols-rounded">check</span>
+                        Guardar ajustes
                     </button>
-                    <button id="btn-import-data" class="m3-btn-tonal">
-                        <span class="material-symbols-rounded">download</span>
-                        Importar datos (JSON)
-                    </button>
+                </div>
+
+                <!-- Companions -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <span class="material-symbols-rounded filled settings-card-icon" style="color:var(--md-success)">group</span>
+                        <h3 class="settings-card-title">Compañeros de viaje</h3>
+                    </div>
+                    <p class="settings-card-description">Personas que puedes seleccionar al programar una salida.</p>
+                    <div id="companions-chips" class="companions-chips-list">
+                        <!-- Rendered by JS -->
+                    </div>
+                    <div class="companion-add-row">
+                        <input type="text" id="input-new-companion" class="m3-input" placeholder="Nombre del compañero">
+                        <button id="btn-add-companion" class="btn-icon-m3 btn-add-companion-m3" aria-label="Añadir compañero">
+                            <span class="material-symbols-rounded">person_add</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data management -->
+                <div class="settings-card settings-card-danger">
+                    <div class="settings-card-header">
+                        <span class="material-symbols-rounded filled settings-card-icon" style="color:var(--md-error)">folder</span>
+                        <h3 class="settings-card-title">Gestión de datos</h3>
+                    </div>
+                    <div class="settings-data-actions">
+                        <button id="btn-export-data" class="m3-btn-tonal">
+                            <span class="material-symbols-rounded">upload</span>
+                            Exportar datos
+                        </button>
+                        <button id="btn-import-data" class="m3-btn-tonal">
+                            <span class="material-symbols-rounded">download</span>
+                            Importar datos
+                        </button>
+                    </div>
                     <input type="file" id="import-file-input" accept=".json" style="display:none">
                     <button id="btn-clear-data" class="m3-btn-danger">
                         <span class="material-symbols-rounded">delete_forever</span>
@@ -382,6 +496,73 @@
         </div>
     </div>
 
+    <!-- ========== ADD/EDIT TRIP MODAL ========== -->
+    <div id="modal-trip-overlay" class="m3-overlay">
+        <div class="m3-bottom-sheet" id="modal-trip">
+            <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title" id="modal-trip-title">Nueva salida</h2>
+                <button id="btn-close-trip-modal" class="btn-icon-m3" aria-label="Cerrar">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+
+            <form id="form-add-trip" class="sheet-form">
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon" style="color:var(--md-tertiary)">hotel</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-trip-hotel">Hotel / Alojamiento</label>
+                        <input type="text" id="input-trip-hotel" class="m3-input" placeholder="Ej: Hotel Mezquita Center" required>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon" style="color:var(--md-primary)">calendar_today</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-trip-start">Fecha de inicio</label>
+                        <input type="date" id="input-trip-start" class="m3-input" required>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon" style="color:var(--md-error)">event</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-trip-end">Fecha de fin</label>
+                        <input type="date" id="input-trip-end" class="m3-input" required>
+                    </div>
+                </div>
+
+                <div class="m3-input-group">
+                    <span class="material-symbols-rounded filled input-leading-icon" style="color:var(--md-on-surface-variant)">notes</span>
+                    <div class="m3-field">
+                        <label class="m3-field-label" for="input-trip-description">Descripción (opcional)</label>
+                        <textarea id="input-trip-description" class="m3-input m3-textarea" placeholder="Notas, check-in, detalles..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Companions Selector -->
+                <div class="trip-companions-section">
+                    <div class="trip-companions-header">
+                        <span class="material-symbols-rounded filled" style="color:var(--md-success)">group</span>
+                        <span class="trip-companions-label">¿Con quién vas?</span>
+                    </div>
+                    <div id="trip-companion-chips" class="trip-companion-chips">
+                        <!-- Rendered by JS from settings.companions -->
+                    </div>
+                    <p class="trip-companions-hint" id="trip-solo-hint">
+                        <span class="material-symbols-rounded" style="font-size:16px">person</span>
+                        Voy solo
+                    </p>
+                </div>
+
+                <button type="submit" class="m3-btn-filled btn-submit-m3" id="btn-submit-trip">
+                    <span class="material-symbols-rounded">flight_takeoff</span>
+                    <span id="btn-submit-trip-text">Programar salida</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- ========== RECORD DETAIL MODAL ========== -->
     <div id="modal-detail-overlay" class="m3-overlay">
         <div class="m3-bottom-sheet" id="modal-detail">
@@ -408,6 +589,32 @@
         </div>
     </div>
 
+    <!-- ========== TRIP DETAIL MODAL ========== -->
+    <div id="modal-trip-detail-overlay" class="m3-overlay">
+        <div class="m3-bottom-sheet" id="modal-trip-detail">
+            <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title">Detalle de salida</h2>
+                <button id="btn-close-trip-detail" class="btn-icon-m3" aria-label="Cerrar">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div id="trip-detail-content" class="detail-content">
+                <!-- Rendered by JS -->
+            </div>
+            <div class="detail-actions">
+                <button id="btn-trip-detail-edit" class="m3-btn-tonal">
+                    <span class="material-symbols-rounded">edit</span>
+                    Editar
+                </button>
+                <button id="btn-trip-detail-delete" class="m3-btn-danger">
+                    <span class="material-symbols-rounded">delete</span>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== DELETE CONFIRM MODAL ========== -->
     <div id="modal-delete-overlay" class="m3-overlay">
         <div class="m3-dialog">
@@ -422,9 +629,31 @@
     </div>
 
     <!-- ========== FAB ========== -->
-    <button id="fab-add" class="m3-fab" aria-label="Añadir registro">
+    <button id="fab-add" class="m3-fab" aria-label="Añadir">
         <span class="material-symbols-rounded">add</span>
     </button>
+
+    <!-- ========== BOTTOM NAVIGATION ========== -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-view="view-home" id="nav-home">
+            <div class="nav-indicator">
+                <span class="material-symbols-rounded nav-icon">home</span>
+            </div>
+            <span class="nav-label">Inicio</span>
+        </button>
+        <button class="bottom-nav-item" data-view="view-overtime" id="nav-overtime">
+            <div class="nav-indicator">
+                <span class="material-symbols-rounded nav-icon">schedule</span>
+            </div>
+            <span class="nav-label">Horas</span>
+        </button>
+        <button class="bottom-nav-item" data-view="view-trips" id="nav-trips">
+            <div class="nav-indicator">
+                <span class="material-symbols-rounded nav-icon">luggage</span>
+            </div>
+            <span class="nav-label">Salidas</span>
+        </button>
+    </nav>
 
     <!-- ========== SNACKBAR WITH UNDO ========== -->
     <div id="toast" class="m3-snackbar">

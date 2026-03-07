@@ -7,7 +7,18 @@ const MONTH_NAMES = [
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const MONTH_SHORT = [
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+];
+
+const DAY_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const DAY_NAMES_FULL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+// Converts JS getDay() (0=Sun) to Monday-first index (0=Mon)
+function getMondayIndex(jsDay) {
+    return (jsDay + 6) % 7;
+}
 
 // ===== CALCULATION ENGINE =====
 function calculateOvertime(startTime, endTime, contractHours, lunchBreak, lunchDuration) {
@@ -32,7 +43,7 @@ function calculateOvertime(startTime, endTime, contractHours, lunchBreak, lunchD
 
 function getMonthRecords(year, month) {
     return _cachedRecords.filter(r => {
-        const d = new Date(r.date);
+        const d = new Date(r.date + 'T00:00:00');
         return d.getFullYear() === year && d.getMonth() === month;
     });
 }
@@ -71,7 +82,7 @@ function getAnnualSummary(year) {
         months.push({
             month: m,
             name: MONTH_NAMES[m],
-            shortName: MONTH_NAMES[m].substring(0, 3),
+            shortName: MONTH_SHORT[m],
             hours: summary.totalHours,
             money: summary.totalMoney,
             days: summary.totalDays
@@ -91,6 +102,34 @@ function getAnnualSummary(year) {
         totalDays: totalYearDays,
         avgHoursPerDay: totalYearDays > 0 ? Math.round((totalYearHours / totalYearDays) * 100) / 100 : 0
     };
+}
+
+// ===== TRIP CALCULATIONS =====
+function getTripDuration(trip) {
+    const start = new Date(trip.dateStart + 'T00:00:00');
+    const end = new Date(trip.dateEnd + 'T00:00:00');
+    const diffMs = end - start;
+    const days = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+    return days;
+}
+
+function getTripStatus(trip) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(trip.dateStart + 'T00:00:00');
+    const end = new Date(trip.dateEnd + 'T00:00:00');
+
+    if (today < start) return 'upcoming';
+    if (today > end) return 'past';
+    return 'active';
+}
+
+function getDaysUntilTrip(trip) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(trip.dateStart + 'T00:00:00');
+    const diffMs = start - today;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
 // ===== FORMATTING HELPERS =====
@@ -113,10 +152,25 @@ function formatDate(dateStr) {
     const d = new Date(dateStr + 'T00:00:00');
     return {
         dayNum: d.getDate(),
-        dayName: DAY_NAMES[d.getDay()],
+        dayName: DAY_NAMES[getMondayIndex(d.getDay())],
+        dayNameFull: DAY_NAMES_FULL[d.getDay()],
         full: `${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`,
-        weekday: DAY_NAMES[d.getDay()]
+        weekday: DAY_NAMES[getMondayIndex(d.getDay())],
+        monthName: MONTH_NAMES[d.getMonth()],
+        year: d.getFullYear()
     };
+}
+
+function formatDateRange(startStr, endStr) {
+    const s = formatDate(startStr);
+    const e = formatDate(endStr);
+    if (startStr === endStr) {
+        return `${s.dayNum} ${s.monthName}`;
+    }
+    if (s.monthName === e.monthName && s.year === e.year) {
+        return `${s.dayNum} – ${e.dayNum} ${s.monthName}`;
+    }
+    return `${s.dayNum} ${s.monthName} – ${e.dayNum} ${e.monthName}`;
 }
 
 function formatInputDate(date) {
@@ -124,6 +178,20 @@ function formatInputDate(date) {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+function formatRelativeDate(dateStr) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = new Date(dateStr + 'T00:00:00');
+    const diffDays = Math.round((date - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Mañana';
+    if (diffDays === -1) return 'Ayer';
+    if (diffDays > 1 && diffDays <= 7) return `En ${diffDays} días`;
+    if (diffDays > 7 && diffDays <= 30) return `En ${Math.ceil(diffDays / 7)} semanas`;
+    return formatDate(dateStr).full;
 }
 
 function escapeHtml(text) {
